@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment # Kubernetes resource kind we are creating
+metadata:
+  name: java-app
+spec:
+  selector:
+    matchLabels:
+      app: java-app
+  replicas: 2 # Number of replicas that will be created for this deployment
+  template:
+    metadata:
+      labels:
+        app: java-app
+    spec:
+      imagePullSecrets:
+        - name: registry-credentials
+      containers:
+        - name: java-app-container
+          image: $CI_REGISTRY/harsh005/java-app/java-app:$CI_PIPELINE_ID # Image that will be used to containers in the cluster
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080 # The port that the container is running on in the cluster
+
+
+---
+
+apiVersion: v1 # Kubernetes API version
+kind: Service # Kubernetes resource kind we are creating
+metadata: # Metadata of the resource kind we are creating
+  name: java-app-svc
+spec:
+  selector:
+    app: java-app
+  ports:
+    - protocol: "TCP"
+      port: 80
+      targetPort: 8080 
+  type: LoadBalancer # type of the service.
